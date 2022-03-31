@@ -1,76 +1,64 @@
-# blaze_vs_querydsl
+## Blaze Persistence as an alternative for Query DSL?
 
-# demo Project
+The initial question was:
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Is there any necessity to switch from "Query DSL" to "Blaze Persistence"? Which benefits do we expect? What
+disadvantages will it come with? What would it cost to migrate existing code?
 
-If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
+The answer is:
+No! There is no need for query-dsl to be replaced with Blaze Persistence. Instead: Blaze Persistence can be used in
+combination with query-dsl applications.
+see: https://persistence.blazebit.com/documentation/1.6/core/manual/en_US/index.html#querydsl-integration
 
-## Running the application in dev mode
+### Comparision
 
-You can run your application in dev mode that enables live coding using:
+Data collected in 2022-04
 
-```shell script
-./mvnw compile quarkus:dev
+|                  | Blaze                | QueryDsl  |
+|------------------|----------------------|-----------|
+| Last Release     | 2022-01              | 2021-07   |
+| Roadmap          | Yes                  | No        |
+| Usage            | < 100                | > 200     |
+| Java Version     | 7 - 17               | 7 - 17    |
+| Support          | Community/Commercial | Community |
+| Window Functions | Yes                  | Yes       |
+| Functions        | Yes                  | Yes       |
+| Entity View      | Yes                  | No        |
+| CTE              | Yes                  | No        |
+| SET operations   | Yes                  | No        |
+| DataNucleus      | Yes                  | ?         |
+
+### Bullet Points
+
+- build on jpa criteria-api --> code against standard api possible
+- framework support for things like spring, quarkus, hibernate, querydsl, graphql, etc...
+- query dsl team itself recommends the use
+  of https://persistence.blazebit.com/documentation/1.6/core/manual/en_US/#querydsl-integration if features like
+  fetchCount will be used.
+- some query dsl developers are also contributors in blaze
+- no migration needed for existing querydsl applications
+
+### Disadvantages
+
+Blaze persistence api is build as an advanced criteria api so from scratch it will be string based. Autocompletion and
+compiler issues will not be available.
+
+#### Blaze Persistence
+
+```
+List<Foo> results = cbf.create(entityManager, Foo.class, "Q")  
+    .where("Q.age").betweenExpression("5").andExpression("10") 
+    .orderByAsc("Q.id")
+    .getResultList();
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at http://localhost:8080/q/dev/.
+#### Query DSL
 
-## Packaging and running the application
-
-The application can be packaged using:
-
-```shell script
-./mvnw package
 ```
-
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory. Be aware that it’s not an _über-jar_ as
-the dependencies are copied into the `target/quarkus-app/lib/` directory.
-
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./mvnw package -Dquarkus.package.type=uber-jar
+QFoo Q = QFoo.foo
+List<Foo> results = = new JPAQuery<Foo>(entityManager)
+    .from(Q)
+    .where(Q.age.between(5, 10))
+    .orderBy(Q.id.asc())
+    .fetch();
 ```
-
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
-
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./mvnw package -Pnative
-```
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./mvnw package -Pnative -Dquarkus.native.container-build=true
-```
-
-You can then execute your native executable with: `./target/demo-1.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult https://quarkus.io/guides/maven-tooling.
-
-## Related Guides
-
-- Hibernate ORM ([guide](https://quarkus.io/guides/hibernate-orm)): Define your persistent model with Hibernate ORM and
-  JPA
-- RESTEasy JAX-RS ([guide](https://quarkus.io/guides/rest-json)): REST endpoint framework implementing JAX-RS and more
-
-## Provided Code
-
-### Hibernate ORM
-
-Create your first JPA entity
-
-[Related guide section...](https://quarkus.io/guides/hibernate-orm)
-
-### RESTEasy JAX-RS
-
-Easily start your RESTful Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started#the-jax-rs-resources)
